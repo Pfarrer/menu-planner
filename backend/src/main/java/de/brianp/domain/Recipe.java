@@ -1,7 +1,7 @@
 package de.brianp.domain;
 
 public class Recipe {
-    
+
     private String id;
     private String name;
     private int prepTimeMinutes;
@@ -66,8 +66,10 @@ public class Recipe {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
         Recipe recipe = (Recipe) o;
         return id != null ? id.equals(recipe.id) : recipe.id == null;
     }

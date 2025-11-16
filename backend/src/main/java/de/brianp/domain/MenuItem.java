@@ -9,7 +9,7 @@ public class MenuItem {
     private String id;
     private String day;
     private String mealType;
-    
+
     @PlanningVariable(valueRangeProviderRefs = "recipeRange")
     private Recipe recipe;
 

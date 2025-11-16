@@ -14,15 +14,15 @@ public class MenuPlan {
 
     @PlanningEntityCollectionProperty
     private List<MenuItem> menuItems;
-    
+
     @ProblemFactCollectionProperty
     private List<Recipe> availableRecipes;
-    
+
     @ValueRangeProvider(id = "recipeRange")
     public List<Recipe> getRecipeRange() {
         return availableRecipes;
     }
-    
+
     @PlanningScore
     private HardSoftScore score;
 

@@ -6,6 +6,8 @@ import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
 
+import java.util.concurrent.CompletableFuture;
+
 @TestConfiguration
 public class MenuPlannerTestConfiguration {
 
@@ -14,8 +16,9 @@ public class MenuPlannerTestConfiguration {
     public MenuPlanSolver mockMenuPlanSolver() {
         return new MenuPlanSolver(null) {
             @Override
-            public void solve(Long problemId, MenuPlan problem) {
-                // Mock implementation - does nothing for tests
+            public CompletableFuture<MenuPlan> solve(Long problemId, MenuPlan problem) {
+                // Mock implementation - returns empty menu plan for tests
+                return CompletableFuture.completedFuture(new MenuPlan());
             }
         };
     }
