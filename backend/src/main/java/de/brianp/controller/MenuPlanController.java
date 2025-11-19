@@ -23,11 +23,6 @@ public class MenuPlanController {
     private final MenuPlanSolver menuPlanSolver;
     private final AtomicLong problemIdCounter = new AtomicLong(0);
 
-    @Autowired
-    public MenuPlanController(MenuPlanSolver menuPlanSolver) {
-        this.menuPlanSolver = menuPlanSolver;
-    }
-
     /**
      * Solve a menu planning problem
      */
@@ -94,120 +89,32 @@ public class MenuPlanController {
     }
 
     // Request and Response DTOs
+    @lombok.Data
     public static class MenuPlanRequest {
         private List<MenuItemRequest> menuItems;
         private List<RecipeRequest> availableRecipes;
-
-        public List<MenuItemRequest> getMenuItems() {
-            return menuItems;
-        }
-
-        public void setMenuItems(List<MenuItemRequest> menuItems) {
-            this.menuItems = menuItems;
-        }
-
-        public List<RecipeRequest> getAvailableRecipes() {
-            return availableRecipes;
-        }
-
-        public void setAvailableRecipes(List<RecipeRequest> availableRecipes) {
-            this.availableRecipes = availableRecipes;
-        }
     }
 
+    @lombok.Data
     public static class MenuItemRequest {
         private String id;
         private String day;
         private String mealType;
-
-        public String getId() {
-            return id;
-        }
-
-        public void setId(String id) {
-            this.id = id;
-        }
-
-        public String getDay() {
-            return day;
-        }
-
-        public void setDay(String day) {
-            this.day = day;
-        }
-
-        public String getMealType() {
-            return mealType;
-        }
-
-        public void setMealType(String mealType) {
-            this.mealType = mealType;
-        }
     }
 
+    @lombok.Data
     public static class RecipeRequest {
         private String id;
         private String name;
         private int prepTimeMinutes;
         private String difficulty;
         private String cuisine;
-
-        public String getId() {
-            return id;
-        }
-
-        public void setId(String id) {
-            this.id = id;
-        }
-
-        public String getName() {
-            return name;
-        }
-
-        public void setName(String name) {
-            this.name = name;
-        }
-
-        public int getPrepTimeMinutes() {
-            return prepTimeMinutes;
-        }
-
-        public void setPrepTimeMinutes(int prepTimeMinutes) {
-            this.prepTimeMinutes = prepTimeMinutes;
-        }
-
-        public String getDifficulty() {
-            return difficulty;
-        }
-
-        public void setDifficulty(String difficulty) {
-            this.difficulty = difficulty;
-        }
-
-        public String getCuisine() {
-            return cuisine;
-        }
-
-        public void setCuisine(String cuisine) {
-            this.cuisine = cuisine;
-        }
     }
 
+    @lombok.Data
+    @lombok.AllArgsConstructor
     public static class MenuPlanResponse {
         private MenuPlan menuPlan;
         private MenuCalendarService.MenuCalendarSyncResult calendarSyncResult;
-
-        public MenuPlanResponse(MenuPlan menuPlan, MenuCalendarService.MenuCalendarSyncResult calendarSyncResult) {
-            this.menuPlan = menuPlan;
-            this.calendarSyncResult = calendarSyncResult;
-        }
-
-        public MenuPlan getMenuPlan() {
-            return menuPlan;
-        }
-
-        public MenuCalendarService.MenuCalendarSyncResult getCalendarSyncResult() {
-            return calendarSyncResult;
-        }
     }
 }

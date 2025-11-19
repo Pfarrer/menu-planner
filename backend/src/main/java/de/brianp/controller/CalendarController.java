@@ -21,12 +21,6 @@ public class CalendarController {
     private final GoogleCalendarService googleCalendarService;
     private final GoogleOAuth2Service oAuth2Service;
 
-    @Autowired
-    public CalendarController(GoogleCalendarService googleCalendarService, GoogleOAuth2Service oAuth2Service) {
-        this.googleCalendarService = googleCalendarService;
-        this.oAuth2Service = oAuth2Service;
-    }
-
     /**
      * Get calendar events for a date range
      */
@@ -76,42 +70,20 @@ public class CalendarController {
     /**
      * Simple status response class
      */
+    @lombok.Data
+    @lombok.AllArgsConstructor
     public static class CalendarStatus {
         private final boolean configured;
-
-        public CalendarStatus(boolean configured) {
-            this.configured = configured;
-        }
-
-        public boolean isConfigured() {
-            return configured;
-        }
     }
 
     /**
      * Response class for current month events
      */
+    @lombok.Data
+    @lombok.AllArgsConstructor
     public static class CurrentMonthResponse {
         private final String month;
         private final int year;
         private final List<Event> events;
-
-        public CurrentMonthResponse(String month, int year, List<Event> events) {
-            this.month = month;
-            this.year = year;
-            this.events = events;
-        }
-
-        public String getMonth() {
-            return month;
-        }
-
-        public int getYear() {
-            return year;
-        }
-
-        public List<Event> getEvents() {
-            return events;
-        }
     }
 }

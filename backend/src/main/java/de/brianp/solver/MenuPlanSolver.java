@@ -53,21 +53,10 @@ public class MenuPlanSolver {
     /**
      * Result class for solve operations
      */
+    @lombok.Data
+    @lombok.AllArgsConstructor
     public static class MenuPlanSolveResult {
         private final MenuPlan menuPlan;
         private final MenuCalendarService.MenuCalendarSyncResult calendarSyncResult;
-
-        public MenuPlanSolveResult(MenuPlan menuPlan, MenuCalendarService.MenuCalendarSyncResult calendarSyncResult) {
-            this.menuPlan = menuPlan;
-            this.calendarSyncResult = calendarSyncResult;
-        }
-
-        public MenuPlan getMenuPlan() {
-            return menuPlan;
-        }
-
-        public MenuCalendarService.MenuCalendarSyncResult getCalendarSyncResult() {
-            return calendarSyncResult;
-        }
     }
 }

@@ -81,18 +81,13 @@ public class MenuCalendarService {
     /**
      * Result class for calendar sync operations
      */
+    @lombok.Data
+    @lombok.AllArgsConstructor(access = lombok.AccessLevel.PRIVATE)
     public static class MenuCalendarSyncResult {
         private final boolean success;
         private final String message;
         private final int eventsCreated;
         private final int existingEvents;
-
-        private MenuCalendarSyncResult(boolean success, String message, int eventsCreated, int existingEvents) {
-            this.success = success;
-            this.message = message;
-            this.eventsCreated = eventsCreated;
-            this.existingEvents = existingEvents;
-        }
 
         public static MenuCalendarSyncResult success(int eventsCreated, int existingEvents) {
             return new MenuCalendarSyncResult(true,
@@ -111,22 +106,6 @@ public class MenuCalendarService {
 
         public static MenuCalendarSyncResult error(String errorMessage) {
             return new MenuCalendarSyncResult(false, "Failed to sync to calendar: " + errorMessage, 0, 0);
-        }
-
-        public boolean isSuccess() {
-            return success;
-        }
-
-        public String getMessage() {
-            return message;
-        }
-
-        public int getEventsCreated() {
-            return eventsCreated;
-        }
-
-        public int getExistingEvents() {
-            return existingEvents;
         }
     }
 }

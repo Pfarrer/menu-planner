@@ -1,5 +1,8 @@
 package de.brianp.domain;
 
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.optaplanner.core.api.domain.solution.PlanningEntityCollectionProperty;
 import org.optaplanner.core.api.domain.solution.PlanningScore;
 import org.optaplanner.core.api.domain.solution.PlanningSolution;
@@ -10,6 +13,9 @@ import org.optaplanner.core.api.score.buildin.hardsoft.HardSoftScore;
 import java.util.List;
 
 @PlanningSolution
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class MenuPlan {
 
     @PlanningEntityCollectionProperty
@@ -25,36 +31,4 @@ public class MenuPlan {
 
     @PlanningScore
     private HardSoftScore score;
-
-    public MenuPlan() {
-    }
-
-    public MenuPlan(List<MenuItem> menuItems, List<Recipe> availableRecipes) {
-        this.menuItems = menuItems;
-        this.availableRecipes = availableRecipes;
-    }
-
-    public List<MenuItem> getMenuItems() {
-        return menuItems;
-    }
-
-    public void setMenuItems(List<MenuItem> menuItems) {
-        this.menuItems = menuItems;
-    }
-
-    public List<Recipe> getAvailableRecipes() {
-        return availableRecipes;
-    }
-
-    public void setAvailableRecipes(List<Recipe> availableRecipes) {
-        this.availableRecipes = availableRecipes;
-    }
-
-    public HardSoftScore getScore() {
-        return score;
-    }
-
-    public void setScore(HardSoftScore score) {
-        this.score = score;
-    }
 }

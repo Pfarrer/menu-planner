@@ -6,7 +6,7 @@ import com.google.api.services.calendar.model.Event;
 import com.google.api.services.calendar.model.EventDateTime;
 import com.google.api.services.calendar.model.Events;
 import de.brianp.domain.MenuItem;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.stereotype.Service;
@@ -20,13 +20,13 @@ import java.util.Collections;
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class GoogleCalendarService {
 
     @Value("${google.calendar.calendar-id}")
     private String calendarId;
 
-    @Autowired
-    private GoogleOAuth2Service oAuth2Service;
+    private final GoogleOAuth2Service oAuth2Service;
 
     /**
      * Creates an authorized Calendar client using OAuth2 credentials.
