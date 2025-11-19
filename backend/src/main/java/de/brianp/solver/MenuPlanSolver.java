@@ -5,6 +5,7 @@ import de.brianp.service.MenuCalendarService;
 import org.optaplanner.core.api.solver.SolverManager;
 import org.optaplanner.core.api.solver.SolverFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.stereotype.Service;
 
 import java.util.concurrent.CompletableFuture;
@@ -36,13 +37,13 @@ public class MenuPlanSolver {
     /**
      * Solve and optionally sync to calendar
      */
-    public CompletableFuture<MenuPlanSolveResult> solveAndSync(Long problemId, MenuPlan problem,
-            boolean syncToCalendar) {
+    public CompletableFuture<MenuPlanSolveResult> solveAndSync(Long problemId, MenuPlan problem, boolean syncToCalendar,
+            OAuth2AuthenticationToken authentication) {
         return solve(problemId, problem).thenApply(solution -> {
             MenuCalendarService.MenuCalendarSyncResult syncResult = null;
 
             if (syncToCalendar && menuCalendarService != null) {
-                syncResult = menuCalendarService.syncMenuToCalendar(solution);
+                syncResult = menuCalendarService.syncMenuToCalendar(solution, authentication);
             }
 
             return new MenuPlanSolveResult(solution, syncResult);

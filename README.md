@@ -7,6 +7,7 @@ A Spring Boot service that plans personal or family menus using OptaPlanner for 
 - **Menu Optimization**: Uses OptaPlanner to generate optimal meal plans
 - **Ingredient Variety**: Prevents ingredient repetition within configurable timeframes
 - **Cuisine Diversity**: Ensures variety across different cuisine types
+- **Google Calendar Integration**: OAuth2 authentication and calendar event access
 - **REST API**: Full REST interface for menu management
 - **Zero Database**: In-memory solution with no external database dependencies
 
@@ -29,20 +30,44 @@ A Spring Boot service that plans personal or family menus using OptaPlanner for 
 1. Clone the repository:
 ```bash
 git clone <repository-url>
-cd personal-menu-planner
+cd personal-menu-planner/backend
 ```
 
-2. Build the project:
+2. Configure Google OAuth2 credentials:
+   - Create a Google OAuth2 client in the Google Cloud Console
+   - Add your credentials to the `.env` file:
+   ```
+   export GOOGLE_CLIENT_ID="your-google-client-id"
+   export GOOGLE_CLIENT_SECRET="your-google-client-secret"
+   ```
+
+3. Build the project:
 ```bash
 mvn clean install
 ```
 
-3. Run the application:
+4. Run the application:
 ```bash
-mvn spring-boot:run
+# Using the provided script (recommended)
+./run-with-env.sh
+
+# Or manually:
+source .env && mvn spring-boot:run
 ```
 
 The service will start on `http://localhost:8080`
+
+### Google OAuth2 Setup
+
+1. Go to [Google Cloud Console](https://console.cloud.google.com/)
+2. Create a new project or select existing one
+3. Enable Google Calendar API
+4. Create OAuth2 credentials:
+   - Go to APIs & Services → Credentials
+   - Click "Create Credentials" → "OAuth 2.0 Client IDs"
+   - Select "Web application"
+   - Add authorized redirect URI: `http://localhost:8080/login/oauth2/code/google`
+5. Copy the Client ID and Client Secret to your `.env` file
 
 ## API Endpoints
 

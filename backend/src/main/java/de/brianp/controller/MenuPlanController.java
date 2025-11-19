@@ -7,6 +7,8 @@ import de.brianp.solver.MenuPlanSolver;
 import de.brianp.service.MenuCalendarService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
@@ -31,7 +33,8 @@ public class MenuPlanController {
      */
     @PostMapping("/solve")
     public CompletableFuture<ResponseEntity<MenuPlanResponse>> solveMenuPlan(@RequestBody MenuPlanRequest request,
-            @RequestParam(defaultValue = "false") boolean syncToCalendar) {
+            @RequestParam(defaultValue = "false") boolean syncToCalendar,
+            @AuthenticationPrincipal OAuth2AuthenticationToken authentication) {
 
         try {
             // Create menu plan from request
@@ -39,12 +42,14 @@ public class MenuPlanController {
 
             // Solve the problem
             Long problemId = problemIdCounter.incrementAndGet();
-            return menuPlanSolver.solveAndSync(problemId, menuPlan, syncToCalendar).thenApply(result -> {
-                MenuPlanResponse response = new MenuPlanResponse(result.getMenuPlan(), result.getCalendarSyncResult());
-                return ResponseEntity.ok(response);
-            }).exceptionally(throwable -> {
-                return ResponseEntity.<MenuPlanResponse> internalServerError().body(null);
-            });
+            return menuPlanSolver.solveAndSync(problemId, menuPlan, syncToCalendar, authentication)
+                    .thenApply(result -> {
+                        MenuPlanResponse response = new MenuPlanResponse(result.getMenuPlan(),
+                                result.getCalendarSyncResult());
+                        return ResponseEntity.ok(response);
+                    }).exceptionally(throwable -> {
+                        return ResponseEntity.<MenuPlanResponse> internalServerError().body(null);
+                    });
 
         } catch (Exception e) {
             return CompletableFuture.completedFuture(ResponseEntity.<MenuPlanResponse> badRequest().body(null));

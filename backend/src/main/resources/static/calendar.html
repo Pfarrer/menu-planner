@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Calendar</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .event-card {
+            background: white;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            border-left: 4px solid #4285f4;
+        }
+        .event-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 8px;
+        }
+        .event-time {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 5px;
+        }
+        .event-description {
+            color: #777;
+            font-size: 14px;
+        }
+        .no-events {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+            font-style: italic;
+        }
+        .loading {
+            text-align: center;
+            padding: 40px;
+            font-size: 18px;
+        }
+        .error {
+            background: #ffebee;
+            color: #c62828;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .login-prompt {
+            background: #e3f2fd;
+            color: #1565c0;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .login-btn {
+            background: #4285f4;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            text-decoration: none;
+            display: inline-block;
+            margin-top: 10px;
+        }
+        .login-btn:hover {
+            background: #3367d6;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>📅 My Calendar</h1>
+        <div id="month-year">Loading...</div>
+    </div>
+
+    <div id="content">
+        <div class="loading">Loading calendar events...</div>
+    </div>
+
+    <script>
+        async function loadCalendarEvents() {
+            try {
+                const response = await fetch('/api/calendar/events/current-month', {
+                    credentials: 'include'
+                });
+                
+                if (response.status === 401) {
+                    showLoginPrompt();
+                    return;
+                }
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                displayEvents(data);
+                
+            } catch (error) {
+                console.error('Error loading calendar events:', error);
+                showError('Failed to load calendar events. Please make sure you are logged in with Google.');
+            }
+        }
+
+        function showLoginPrompt() {
+            document.getElementById('content').innerHTML = `
+                <div class="login-prompt">
+                    <h3>🔐 Login Required</h3>
+                    <p>Please log in with Google to view your calendar events.</p>
+                    <a href="/oauth2/authorization/google" class="login-btn">Login with Google</a>
+                </div>
+            `;
+        }
+
+        function showError(message) {
+            document.getElementById('content').innerHTML = `
+                <div class="error">
+                    <strong>Error:</strong> ${message}
+                </div>
+            `;
+        }
+
+        function displayEvents(data) {
+            // Update header with month and year
+            document.getElementById('month-year').textContent = `${data.month} ${data.year}`;
+            
+            const contentDiv = document.getElementById('content');
+            
+            if (!data.events || data.events.length === 0) {
+                contentDiv.innerHTML = `
+                    <div class="no-events">
+                        <h3>No events found</h3>
+                        <p>You don't have any calendar events for ${data.month} ${data.year}.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            // Sort events by start time
+            const sortedEvents = data.events.sort((a, b) => {
+                const dateA = new Date(a.start.dateTime || a.start.date);
+                const dateB = new Date(b.start.dateTime || b.start.date);
+                return dateA - dateB;
+            });
+
+            let eventsHtml = '';
+            sortedEvents.forEach(event => {
+                const startTime = event.start.dateTime ? new Date(event.start.dateTime) : new Date(event.start.date);
+                const endTime = event.end.dateTime ? new Date(event.end.dateTime) : null;
+                
+                const formattedDate = startTime.toLocaleDateString('en-US', {
+                    weekday: 'short',
+                    month: 'short', 
+                    day: 'numeric'
+                });
+                
+                const formattedTime = startTime.toLocaleTimeString('en-US', {
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+                
+                const allDay = !event.start.dateTime;
+                
+                eventsHtml += `
+                    <div class="event-card">
+                        <div class="event-title">${event.summary || 'No title'}</div>
+                        <div class="event-time">
+                            📅 ${formattedDate}
+                            ${allDay ? ' (All day)' : `⏰ ${formattedTime}`}
+                            ${endTime ? ` - ${endTime.toLocaleTimeString('en-US', {hour: '2-digit', minute: '2-digit'})}` : ''}
+                        </div>
+                        ${event.description ? `<div class="event-description">${event.description}</div>` : ''}
+                        ${event.location ? `<div class="event-time">📍 ${event.location}</div>` : ''}
+                    </div>
+                `;
+            });
+
+            contentDiv.innerHTML = eventsHtml;
+        }
+
+        // Load events when page loads
+        document.addEventListener('DOMContentLoaded', loadCalendarEvents);
+    </script>
+</body>
+</html>

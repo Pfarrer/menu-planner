@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login Successful</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .success-container {
+            background: white;
+            border-radius: 15px;
+            padding: 40px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            animation: slideIn 0.5s ease-out;
+        }
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        .success-icon {
+            font-size: 60px;
+            margin-bottom: 20px;
+            animation: bounce 1s ease-in-out;
+        }
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% {
+                transform: translateY(0);
+            }
+            40% {
+                transform: translateY(-10px);
+            }
+            60% {
+                transform: translateY(-5px);
+            }
+        }
+        h1 {
+            color: #4CAF50;
+            margin-bottom: 15px;
+            font-size: 28px;
+        }
+        .message {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 16px;
+            line-height: 1.5;
+        }
+        .user-info {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            text-align: left;
+        }
+        .user-info h3 {
+            margin-top: 0;
+            color: #333;
+            border-bottom: 2px solid #4CAF50;
+            padding-bottom: 10px;
+        }
+        .user-detail {
+            margin: 10px 0;
+            display: flex;
+            align-items: center;
+        }
+        .user-detail strong {
+            min-width: 80px;
+            color: #555;
+        }
+        .action-buttons {
+            margin-top: 30px;
+        }
+        .btn {
+            display: inline-block;
+            padding: 12px 24px;
+            margin: 10px;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .btn-primary {
+            background: #4285f4;
+            color: white;
+        }
+        .btn-primary:hover {
+            background: #3367d6;
+            transform: translateY(-2px);
+        }
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        .btn-secondary:hover {
+            background: #5a6268;
+            transform: translateY(-2px);
+        }
+        .avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            margin-right: 15px;
+            border: 3px solid #4CAF50;
+        }
+    </style>
+</head>
+<body>
+    <div class="success-container">
+        <div class="success-icon">✅</div>
+        <h1>Login Successful!</h1>
+        <div class="message">
+            You have successfully logged in with Google. You can now access your calendar and other features.
+        </div>
+        
+        <div class="user-info" id="userInfo">
+            <h3>👤 User Information</h3>
+            <div class="user-detail">
+                <img id="userAvatar" class="avatar" src="" alt="User Avatar">
+                <div>
+                    <div><strong>Name:</strong> <span id="userName">Loading...</span></div>
+                    <div><strong>Email:</strong> <span id="userEmail">Loading...</span></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="action-buttons">
+            <a href="/calendar.html" class="btn btn-primary">📅 View My Calendar</a>
+            <a href="/" class="btn btn-secondary">🏠 Go Home</a>
+        </div>
+    </div>
+
+    <script>
+        async function loadUserInfo() {
+            try {
+                const response = await fetch('/api/auth/user');
+                if (response.ok) {
+                    const user = await response.json();
+                    document.getElementById('userName').textContent = user.name || 'N/A';
+                    document.getElementById('userEmail').textContent = user.email || 'N/A';
+                    
+                    if (user.picture) {
+                        document.getElementById('userAvatar').src = user.picture;
+                    }
+                } else {
+                    document.getElementById('userInfo').innerHTML = `
+                        <p style="color: #dc3545;">Unable to load user information</p>
+                    `;
+                }
+            } catch (error) {
+                console.error('Error loading user info:', error);
+                document.getElementById('userInfo').innerHTML = `
+                    <p style="color: #dc3545;">Error loading user information</p>
+                `;
+            }
+        }
+
+        // Load user info when page loads
+        document.addEventListener('DOMContentLoaded', loadUserInfo);
+    </script>
+</body>
+</html>

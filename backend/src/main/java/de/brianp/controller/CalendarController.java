@@ -2,9 +2,13 @@ package de.brianp.controller;
 
 import com.google.api.services.calendar.model.Event;
 import de.brianp.service.GoogleCalendarService;
+import de.brianp.service.GoogleOAuth2Service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
@@ -15,10 +19,12 @@ import java.util.List;
 public class CalendarController {
 
     private final GoogleCalendarService googleCalendarService;
+    private final GoogleOAuth2Service oAuth2Service;
 
     @Autowired
-    public CalendarController(GoogleCalendarService googleCalendarService) {
+    public CalendarController(GoogleCalendarService googleCalendarService, GoogleOAuth2Service oAuth2Service) {
         this.googleCalendarService = googleCalendarService;
+        this.oAuth2Service = oAuth2Service;
     }
 
     /**
@@ -26,15 +32,33 @@ public class CalendarController {
      */
     @GetMapping("/events")
     public ResponseEntity<?> getEvents(@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
+            @AuthenticationPrincipal OAuth2AuthenticationToken authentication) {
 
-        if (!googleCalendarService.isConfigured()) {
-            return ResponseEntity.badRequest().body("Google Calendar is not configured");
+        if (!oAuth2Service.isUserAuthenticated(authentication)) {
+            return ResponseEntity.status(401).body("User not authenticated with Google");
         }
 
         try {
-            List<Event> events = googleCalendarService.getEvents(startDate, endDate);
+            List<Event> events = googleCalendarService.getEvents(startDate, endDate, authentication);
             return ResponseEntity.ok(events);
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body("Failed to retrieve calendar events: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Get calendar events for current month
+     */
+    @GetMapping("/events/current-month")
+    public ResponseEntity<?> getCurrentMonthEvents(@AuthenticationPrincipal OAuth2User principal) {
+        try {
+            LocalDate today = LocalDate.now();
+            LocalDate startOfMonth = today.withDayOfMonth(1);
+            LocalDate endOfMonth = today.withDayOfMonth(today.lengthOfMonth());
+
+            List<Event> events = googleCalendarService.getEvents(startOfMonth, endOfMonth, null /* TODO */);
+            return ResponseEntity.ok(new CurrentMonthResponse(today.getMonth().toString(), today.getYear(), events));
         } catch (Exception e) {
             return ResponseEntity.internalServerError().body("Failed to retrieve calendar events: " + e.getMessage());
         }
@@ -44,8 +68,9 @@ public class CalendarController {
      * Check if Google Calendar is configured
      */
     @GetMapping("/status")
-    public ResponseEntity<?> getCalendarStatus() {
-        return ResponseEntity.ok(new CalendarStatus(googleCalendarService.isConfigured()));
+    public ResponseEntity<?> getCalendarStatus(@AuthenticationPrincipal OAuth2AuthenticationToken authentication) {
+        boolean isAuthenticated = oAuth2Service.isUserAuthenticated(authentication);
+        return ResponseEntity.ok(new CalendarStatus(isAuthenticated));
     }
 
     /**
@@ -60,6 +85,33 @@ public class CalendarController {
 
         public boolean isConfigured() {
             return configured;
+        }
+    }
+
+    /**
+     * Response class for current month events
+     */
+    public static class CurrentMonthResponse {
+        private final String month;
+        private final int year;
+        private final List<Event> events;
+
+        public CurrentMonthResponse(String month, int year, List<Event> events) {
+            this.month = month;
+            this.year = year;
+            this.events = events;
+        }
+
+        public String getMonth() {
+            return month;
+        }
+
+        public int getYear() {
+            return year;
+        }
+
+        public List<Event> getEvents() {
+            return events;
         }
     }
 }

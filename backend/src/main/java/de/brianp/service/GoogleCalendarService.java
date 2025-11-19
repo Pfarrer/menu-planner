@@ -1,16 +1,14 @@
 package de.brianp.service;
 
-import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
-import com.google.api.client.http.javanet.NetHttpTransport;
-import com.google.api.client.json.JsonFactory;
-import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.client.util.DateTime;
 import com.google.api.services.calendar.Calendar;
 import com.google.api.services.calendar.model.Event;
 import com.google.api.services.calendar.model.EventDateTime;
 import com.google.api.services.calendar.model.Events;
 import de.brianp.domain.MenuItem;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -24,29 +22,26 @@ import java.util.List;
 @Service
 public class GoogleCalendarService {
 
-    private static final String APPLICATION_NAME = "Menu Planner";
-    private static final JsonFactory JSON_FACTORY = JacksonFactory.getDefaultInstance();
-
-    @Value("${google.calendar.api-key:}")
-    private String apiKey;
-
-    @Value("${google.calendar.calendar-id:primary}")
+    @Value("${google.calendar.calendar-id}")
     private String calendarId;
 
+    @Autowired
+    private GoogleOAuth2Service oAuth2Service;
+
     /**
-     * Creates an authorized Calendar client.
+     * Creates an authorized Calendar client using OAuth2 credentials.
      */
-    private Calendar getCalendar() throws IOException, GeneralSecurityException {
-        final NetHttpTransport httpTransport = GoogleNetHttpTransport.newTrustedTransport();
-        return new Calendar.Builder(httpTransport, JSON_FACTORY, null).setApplicationName(APPLICATION_NAME).build();
+    private Calendar getCalendar(OAuth2AuthenticationToken authentication)
+            throws IOException, GeneralSecurityException {
+        return oAuth2Service.getCalendarService();
     }
 
     /**
      * Get events from Google Calendar for a specific date range
      */
-    public List<Event> getEvents(LocalDate startDate, LocalDate endDate) {
+    public List<Event> getEvents(LocalDate startDate, LocalDate endDate, OAuth2AuthenticationToken authentication) {
         try {
-            Calendar calendar = getCalendar();
+            Calendar calendar = getCalendar(authentication);
 
             ZonedDateTime startZdt = startDate.atStartOfDay(ZoneId.systemDefault());
             ZonedDateTime endZdt = endDate.plusDays(1).atStartOfDay(ZoneId.systemDefault());
@@ -65,9 +60,9 @@ public class GoogleCalendarService {
     /**
      * Create a calendar event for a menu item
      */
-    public Event createMenuEvent(MenuItem menuItem) {
+    public Event createMenuEvent(MenuItem menuItem, OAuth2AuthenticationToken authentication) {
         try {
-            Calendar calendar = getCalendar();
+            Calendar calendar = getCalendar(authentication);
 
             Event event = new Event()
                     .setSummary("Meal: "
@@ -100,10 +95,10 @@ public class GoogleCalendarService {
     /**
      * Create multiple calendar events for menu items
      */
-    public void createMenuEvents(List<MenuItem> menuItems) {
+    public void createMenuEvents(List<MenuItem> menuItems, OAuth2AuthenticationToken authentication) {
         for (MenuItem menuItem : menuItems) {
             if (menuItem.getRecipe() != null) {
-                createMenuEvent(menuItem);
+                createMenuEvent(menuItem, authentication);
             }
         }
     }
@@ -111,9 +106,9 @@ public class GoogleCalendarService {
     /**
      * Delete a calendar event
      */
-    public void deleteEvent(String eventId) {
+    public void deleteEvent(String eventId, OAuth2AuthenticationToken authentication) {
         try {
-            Calendar calendar = getCalendar();
+            Calendar calendar = getCalendar(authentication);
             calendar.events().delete(calendarId, eventId).execute();
         } catch (IOException | GeneralSecurityException e) {
             throw new RuntimeException("Failed to delete calendar event", e);
@@ -124,6 +119,6 @@ public class GoogleCalendarService {
      * Check if Google Calendar integration is configured
      */
     public boolean isConfigured() {
-        return apiKey != null && !apiKey.trim().isEmpty();
+        return true; // OAuth2 is always configured if user is authenticated
     }
 }

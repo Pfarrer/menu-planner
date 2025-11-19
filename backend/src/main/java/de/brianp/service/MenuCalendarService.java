@@ -4,6 +4,7 @@ import com.google.api.services.calendar.model.Event;
 import de.brianp.domain.MenuPlan;
 import de.brianp.domain.MenuItem;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -14,18 +15,20 @@ import java.util.stream.Collectors;
 public class MenuCalendarService {
 
     private final GoogleCalendarService googleCalendarService;
+    private final GoogleOAuth2Service oAuth2Service;
 
     @Autowired
-    public MenuCalendarService(GoogleCalendarService googleCalendarService) {
+    public MenuCalendarService(GoogleCalendarService googleCalendarService, GoogleOAuth2Service oAuth2Service) {
         this.googleCalendarService = googleCalendarService;
+        this.oAuth2Service = oAuth2Service;
     }
 
     /**
      * Sync a menu plan to Google Calendar
      */
-    public MenuCalendarSyncResult syncMenuToCalendar(MenuPlan menuPlan) {
-        if (!googleCalendarService.isConfigured()) {
-            return MenuCalendarSyncResult.notConfigured();
+    public MenuCalendarSyncResult syncMenuToCalendar(MenuPlan menuPlan, OAuth2AuthenticationToken authentication) {
+        if (!oAuth2Service.isUserAuthenticated(authentication)) {
+            return MenuCalendarSyncResult.notAuthenticated();
         }
 
         try {
@@ -33,11 +36,12 @@ public class MenuCalendarService {
             LocalDate startDate = getStartDateFromMenuPlan(menuPlan);
             LocalDate endDate = getEndDateFromMenuPlan(menuPlan);
 
-            List<Event> existingEvents = googleCalendarService.getEvents(startDate, endDate);
+            List<Event> existingEvents = googleCalendarService.getEvents(startDate, endDate, authentication);
 
             // Create new events for menu items
             List<Event> createdEvents = menuPlan.getMenuItems().stream().filter(item -> item.getRecipe() != null)
-                    .map(googleCalendarService::createMenuEvent).collect(Collectors.toList());
+                    .map(item -> googleCalendarService.createMenuEvent(item, authentication))
+                    .collect(Collectors.toList());
 
             return MenuCalendarSyncResult.success(createdEvents.size(), existingEvents.size());
 
@@ -49,12 +53,13 @@ public class MenuCalendarService {
     /**
      * Get calendar events that might conflict with menu planning
      */
-    public List<Event> getConflictingEvents(LocalDate startDate, LocalDate endDate) {
-        if (!googleCalendarService.isConfigured()) {
+    public List<Event> getConflictingEvents(LocalDate startDate, LocalDate endDate,
+            OAuth2AuthenticationToken authentication) {
+        if (!oAuth2Service.isUserAuthenticated(authentication)) {
             return List.of();
         }
 
-        return googleCalendarService.getEvents(startDate, endDate);
+        return googleCalendarService.getEvents(startDate, endDate, authentication);
     }
 
     /**
@@ -98,6 +103,10 @@ public class MenuCalendarService {
 
         public static MenuCalendarSyncResult notConfigured() {
             return new MenuCalendarSyncResult(false, "Google Calendar is not configured", 0, 0);
+        }
+
+        public static MenuCalendarSyncResult notAuthenticated() {
+            return new MenuCalendarSyncResult(false, "User not authenticated with Google", 0, 0);
         }
 
         public static MenuCalendarSyncResult error(String errorMessage) {
