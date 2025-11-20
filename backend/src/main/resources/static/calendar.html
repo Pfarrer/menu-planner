@@ -102,6 +102,10 @@
                 const response = await fetch('/api/calendar/events/current-month', {
                     credentials: 'include'
                 });
+                const a = await fetch('/api/calendar/list', {
+                    credentials: 'include'
+                });
+                console.log(a);
                 
                 if (response.status === 401) {
                     showLoginPrompt();

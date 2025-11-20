@@ -1,9 +1,12 @@
 package de.brianp.controller;
 
+import com.google.api.services.calendar.model.CalendarListEntry;
 import com.google.api.services.calendar.model.Event;
 import de.brianp.service.GoogleCalendarService;
 import de.brianp.service.GoogleOAuth2Service;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -16,6 +19,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/calendar")
+@RequiredArgsConstructor
 public class CalendarController {
 
     private final GoogleCalendarService googleCalendarService;
@@ -59,6 +63,19 @@ public class CalendarController {
     }
 
     /**
+     * Get all calendars the user has access to
+     */
+    @GetMapping("/list")
+    public ResponseEntity<?> getAllCalendars(@AuthenticationPrincipal OAuth2AuthenticationToken authentication) {
+        try {
+            List<CalendarListEntry> calendars = googleCalendarService.getAllCalendars(authentication);
+            return ResponseEntity.ok(calendars);
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body("Failed to retrieve calendar list: " + e.getMessage());
+        }
+    }
+
+    /**
      * Check if Google Calendar is configured
      */
     @GetMapping("/status")
@@ -70,20 +87,20 @@ public class CalendarController {
     /**
      * Simple status response class
      */
-    @lombok.Data
-    @lombok.AllArgsConstructor
+    @Data
+    @AllArgsConstructor
     public static class CalendarStatus {
-        private final boolean configured;
+        private boolean configured;
     }
 
     /**
      * Response class for current month events
      */
-    @lombok.Data
-    @lombok.AllArgsConstructor
+    @Data
+    @AllArgsConstructor
     public static class CurrentMonthResponse {
-        private final String month;
-        private final int year;
-        private final List<Event> events;
+        private String month;
+        private int year;
+        private List<Event> events;
     }
 }

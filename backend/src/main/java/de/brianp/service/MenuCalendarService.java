@@ -3,7 +3,9 @@ package de.brianp.service;
 import com.google.api.services.calendar.model.Event;
 import de.brianp.domain.MenuPlan;
 import de.brianp.domain.MenuItem;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.stereotype.Service;
 
@@ -12,16 +14,11 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class MenuCalendarService {
 
     private final GoogleCalendarService googleCalendarService;
     private final GoogleOAuth2Service oAuth2Service;
-
-    @Autowired
-    public MenuCalendarService(GoogleCalendarService googleCalendarService, GoogleOAuth2Service oAuth2Service) {
-        this.googleCalendarService = googleCalendarService;
-        this.oAuth2Service = oAuth2Service;
-    }
 
     /**
      * Sync a menu plan to Google Calendar
@@ -81,18 +78,17 @@ public class MenuCalendarService {
     /**
      * Result class for calendar sync operations
      */
-    @lombok.Data
-    @lombok.AllArgsConstructor(access = lombok.AccessLevel.PRIVATE)
+    @Data
+    @AllArgsConstructor
     public static class MenuCalendarSyncResult {
-        private final boolean success;
-        private final String message;
-        private final int eventsCreated;
-        private final int existingEvents;
+        private boolean success;
+        private String message;
+        private int eventsCreated;
+        private int existingEvents;
 
         public static MenuCalendarSyncResult success(int eventsCreated, int existingEvents) {
             return new MenuCalendarSyncResult(true,
-                    String.format("Successfully synced %d events to calendar (found %d existing events)", eventsCreated,
-                            existingEvents),
+                    String.format("Successfully synced %d events to calendar (found %d existing events)", eventsCreated, existingEvents),
                     eventsCreated, existingEvents);
         }
 

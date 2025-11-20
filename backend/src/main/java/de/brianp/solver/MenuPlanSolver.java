@@ -2,6 +2,9 @@ package de.brianp.solver;
 
 import de.brianp.domain.MenuPlan;
 import de.brianp.service.MenuCalendarService;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.RequiredArgsConstructor;
 import org.optaplanner.core.api.solver.SolverManager;
 import org.optaplanner.core.api.solver.SolverFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,14 +15,11 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
 @Service
+@RequiredArgsConstructor
 public class MenuPlanSolver {
 
     private final SolverManager<MenuPlan, Long> solverManager;
     private MenuCalendarService menuCalendarService;
-
-    public MenuPlanSolver(SolverManager<MenuPlan, Long> solverManager) {
-        this.solverManager = solverManager;
-    }
 
     @Autowired(required = false)
     public void setMenuCalendarService(MenuCalendarService menuCalendarService) {
@@ -53,10 +53,10 @@ public class MenuPlanSolver {
     /**
      * Result class for solve operations
      */
-    @lombok.Data
-    @lombok.AllArgsConstructor
+    @Data
+    @AllArgsConstructor
     public static class MenuPlanSolveResult {
-        private final MenuPlan menuPlan;
-        private final MenuCalendarService.MenuCalendarSyncResult calendarSyncResult;
+        private MenuPlan menuPlan;
+        private MenuCalendarService.MenuCalendarSyncResult calendarSyncResult;
     }
 }

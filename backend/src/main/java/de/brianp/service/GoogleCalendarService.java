@@ -2,6 +2,8 @@ package de.brianp.service;
 
 import com.google.api.client.util.DateTime;
 import com.google.api.services.calendar.Calendar;
+import com.google.api.services.calendar.model.CalendarList;
+import com.google.api.services.calendar.model.CalendarListEntry;
 import com.google.api.services.calendar.model.Event;
 import com.google.api.services.calendar.model.EventDateTime;
 import com.google.api.services.calendar.model.Events;
@@ -112,6 +114,19 @@ public class GoogleCalendarService {
             calendar.events().delete(calendarId, eventId).execute();
         } catch (IOException | GeneralSecurityException e) {
             throw new RuntimeException("Failed to delete calendar event", e);
+        }
+    }
+
+    /**
+     * Get all calendars the user has access to
+     */
+    public List<CalendarListEntry> getAllCalendars(OAuth2AuthenticationToken authentication) {
+        try {
+            Calendar calendar = getCalendar(authentication);
+            CalendarList calendarList = calendar.calendarList().list().execute();
+            return calendarList.getItems();
+        } catch (IOException | GeneralSecurityException e) {
+            throw new RuntimeException("Failed to retrieve calendar list", e);
         }
     }
 

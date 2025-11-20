@@ -18,7 +18,7 @@ public class MenuPlannerTestConfiguration {
             @Override
             public CompletableFuture<MenuPlan> solve(Long problemId, MenuPlan problem) {
                 // Mock implementation - returns empty menu plan for tests
-                return CompletableFuture.completedFuture(new MenuPlan());
+                return CompletableFuture.completedFuture(new MenuPlan(null, null));
             }
         };
     }

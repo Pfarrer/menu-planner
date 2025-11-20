@@ -5,7 +5,9 @@ import de.brianp.domain.MenuItem;
 import de.brianp.domain.Recipe;
 import de.brianp.solver.MenuPlanSolver;
 import de.brianp.service.MenuCalendarService;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
@@ -18,6 +20,7 @@ import java.util.concurrent.atomic.AtomicLong;
 
 @RestController
 @RequestMapping("/api/menu-plan")
+@RequiredArgsConstructor
 public class MenuPlanController {
 
     private final MenuPlanSolver menuPlanSolver;
@@ -89,20 +92,20 @@ public class MenuPlanController {
     }
 
     // Request and Response DTOs
-    @lombok.Data
+    @Data
     public static class MenuPlanRequest {
         private List<MenuItemRequest> menuItems;
         private List<RecipeRequest> availableRecipes;
     }
 
-    @lombok.Data
+    @Data
     public static class MenuItemRequest {
         private String id;
         private String day;
         private String mealType;
     }
 
-    @lombok.Data
+    @Data
     public static class RecipeRequest {
         private String id;
         private String name;
@@ -111,8 +114,8 @@ public class MenuPlanController {
         private String cuisine;
     }
 
-    @lombok.Data
-    @lombok.AllArgsConstructor
+    @Data
+    @AllArgsConstructor
     public static class MenuPlanResponse {
         private MenuPlan menuPlan;
         private MenuCalendarService.MenuCalendarSyncResult calendarSyncResult;
