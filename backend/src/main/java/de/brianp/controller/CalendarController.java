@@ -31,6 +31,7 @@ public class CalendarController {
     @GetMapping("/events")
     public ResponseEntity<?> getEvents(@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
+            @RequestParam(required = false) String calendarId,
             @AuthenticationPrincipal OAuth2AuthenticationToken authentication) {
 
         if (!oAuth2Service.isUserAuthenticated(authentication)) {
@@ -38,7 +39,7 @@ public class CalendarController {
         }
 
         try {
-            List<Event> events = googleCalendarService.getEvents(startDate, endDate, authentication);
+            List<Event> events = googleCalendarService.getEvents(startDate, endDate, calendarId, authentication);
             return ResponseEntity.ok(events);
         } catch (Exception e) {
             return ResponseEntity.internalServerError().body("Failed to retrieve calendar events: " + e.getMessage());
@@ -49,13 +50,15 @@ public class CalendarController {
      * Get calendar events for current month
      */
     @GetMapping("/events/current-month")
-    public ResponseEntity<?> getCurrentMonthEvents(@AuthenticationPrincipal OAuth2User principal) {
+    public ResponseEntity<?> getCurrentMonthEvents(
+            @RequestParam(required = false) String calendarId,
+            @AuthenticationPrincipal OAuth2User principal) {
         try {
             LocalDate today = LocalDate.now();
             LocalDate startOfMonth = today.withDayOfMonth(1);
             LocalDate endOfMonth = today.withDayOfMonth(today.lengthOfMonth());
 
-            List<Event> events = googleCalendarService.getEvents(startOfMonth, endOfMonth, null /* TODO */);
+            List<Event> events = googleCalendarService.getEvents(startOfMonth, endOfMonth, calendarId, null /* TODO */);
             return ResponseEntity.ok(new CurrentMonthResponse(today.getMonth().toString(), today.getYear(), events));
         } catch (Exception e) {
             return ResponseEntity.internalServerError().body("Failed to retrieve calendar events: " + e.getMessage());

@@ -41,14 +41,17 @@ public class GoogleCalendarService {
     /**
      * Get events from Google Calendar for a specific date range
      */
-    public List<Event> getEvents(LocalDate startDate, LocalDate endDate, OAuth2AuthenticationToken authentication) {
+    public List<Event> getEvents(LocalDate startDate, LocalDate endDate, String calendarId, OAuth2AuthenticationToken authentication) {
         try {
             Calendar calendar = getCalendar(authentication);
 
             ZonedDateTime startZdt = startDate.atStartOfDay(ZoneId.systemDefault());
             ZonedDateTime endZdt = endDate.plusDays(1).atStartOfDay(ZoneId.systemDefault());
 
-            Events events = calendar.events().list(calendarId)
+            // Use provided calendarId or fall back to default
+            String targetCalendarId = (calendarId != null && !calendarId.isEmpty()) ? calendarId : this.calendarId;
+
+            Events events = calendar.events().list(targetCalendarId)
                     .setTimeMin(new DateTime(startZdt.toInstant().toEpochMilli()))
                     .setTimeMax(new DateTime(endZdt.toInstant().toEpochMilli())).setSingleEvents(true)
                     .setOrderBy("startTime").execute();
@@ -63,6 +66,13 @@ public class GoogleCalendarService {
      * Create a calendar event for a menu item
      */
     public Event createMenuEvent(MenuItem menuItem, OAuth2AuthenticationToken authentication) {
+        return createMenuEvent(menuItem, this.calendarId, authentication);
+    }
+
+    /**
+     * Create a calendar event for a menu item in a specific calendar
+     */
+    public Event createMenuEvent(MenuItem menuItem, String calendarId, OAuth2AuthenticationToken authentication) {
         try {
             Calendar calendar = getCalendar(authentication);
 
@@ -88,7 +98,10 @@ public class GoogleCalendarService {
             event.setStart(start);
             event.setEnd(end);
 
-            return calendar.events().insert(calendarId, event).execute();
+            // Use provided calendarId or fall back to default
+            String targetCalendarId = (calendarId != null && !calendarId.isEmpty()) ? calendarId : this.calendarId;
+
+            return calendar.events().insert(targetCalendarId, event).execute();
         } catch (IOException | GeneralSecurityException e) {
             throw new RuntimeException("Failed to create calendar event", e);
         }
@@ -109,9 +122,20 @@ public class GoogleCalendarService {
      * Delete a calendar event
      */
     public void deleteEvent(String eventId, OAuth2AuthenticationToken authentication) {
+        deleteEvent(eventId, this.calendarId, authentication);
+    }
+
+    /**
+     * Delete a calendar event from a specific calendar
+     */
+    public void deleteEvent(String eventId, String calendarId, OAuth2AuthenticationToken authentication) {
         try {
             Calendar calendar = getCalendar(authentication);
-            calendar.events().delete(calendarId, eventId).execute();
+            
+            // Use provided calendarId or fall back to default
+            String targetCalendarId = (calendarId != null && !calendarId.isEmpty()) ? calendarId : this.calendarId;
+            
+            calendar.events().delete(targetCalendarId, eventId).execute();
         } catch (IOException | GeneralSecurityException e) {
             throw new RuntimeException("Failed to delete calendar event", e);
         }
