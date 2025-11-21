@@ -2,11 +2,10 @@ package de.brianp.config;
 
 import de.brianp.domain.MenuPlan;
 import de.brianp.solver.MenuPlanSolver;
+import java.util.concurrent.CompletableFuture;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
-
-import java.util.concurrent.CompletableFuture;
 
 @TestConfiguration
 public class MenuPlannerTestConfiguration {

@@ -4,6 +4,12 @@ import com.google.api.services.calendar.model.CalendarListEntry;
 import com.google.api.services.calendar.model.Event;
 import de.brianp.service.GoogleCalendarService;
 import de.brianp.service.GoogleOAuth2Service;
+import jakarta.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.time.LocalDate;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
@@ -11,16 +17,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
-import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.web.bind.annotation.*;
-
-import jakarta.servlet.http.HttpServletResponse;
-
-import java.io.IOException;
-import java.time.LocalDate;
-import java.util.List;
-import java.util.Map;
-import java.util.HashMap;
 
 @RestController
 @RequestMapping("/api/calendar")
@@ -58,12 +55,12 @@ public class CalendarController {
     public void getCurrentMonthEvents(
             @RequestParam(required = false) String calendarId,
             HttpServletResponse response) throws IOException {
-        
+
         response.setContentType("text/event-stream");
-        
+
         // Send loading state
         sendSseEvent(response, "datastar-merge-signals", "{\"loading\": true, \"error\": null}");
-        
+
         try {
             LocalDate today = LocalDate.now();
             LocalDate startOfMonth = today.withDayOfMonth(1);
@@ -77,26 +74,26 @@ public class CalendarController {
                 // Use mock events if not authenticated
                 events = getMockEvents();
             }
-            
+
             // Generate HTML for events
             String eventsHtml = generateEventsHtml(events);
-            
-            sendSseEvent(response, "datastar-merge-fragments", 
+
+            sendSseEvent(response, "datastar-merge-fragments",
                 "{\"fragments\":[{\"selector\":\"#content\",\"html\":\"" + escapeJson(eventsHtml) + "\"}]}");
-            
+
             // Update signals with current month/year
             Map<String, Object> monthSignals = new HashMap<>();
             monthSignals.put("currentMonth", today.getMonth().toString());
             monthSignals.put("currentYear", today.getYear());
-            
+
             sendSseEvent(response, "datastar-merge-signals", monthSignals.toString());
-            
+
             // Clear loading state
             sendSseEvent(response, "datastar-merge-signals", "{\"loading\": false}");
-            
+
         } catch (Exception e) {
             // Send error state
-            sendSseEvent(response, "datastar-merge-signals", 
+            sendSseEvent(response, "datastar-merge-signals",
                 "{\"loading\": false, \"error\": \"Failed to load calendar events: " + e.getMessage() + "\"}");
         }
     }
@@ -123,7 +120,7 @@ public class CalendarController {
 
     private String generateEventsHtml(List<Event> events) {
         StringBuilder html = new StringBuilder();
-        
+
         if (events.isEmpty()) {
             html.append("""
                 <div class="no-events">
@@ -133,10 +130,10 @@ public class CalendarController {
                 """);
         } else {
             for (Event event : events) {
-                String startTime = event.getStart().getDateTime() != null 
-                    ? event.getStart().getDateTime().toString() 
+                String startTime = event.getStart().getDateTime() != null
+                    ? event.getStart().getDateTime().toString()
                     : event.getStart().getDate().toString();
-                
+
                 html.append(String.format("""
                     <div class="event-card">
                         <div class="event-title">%s</div>
@@ -152,7 +149,7 @@ public class CalendarController {
                 ));
             }
         }
-        
+
         return html.toString();
     }
 

@@ -1,14 +1,13 @@
 package de.brianp.controller;
 
-import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
-
 import java.io.IOException;
 import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 @RestController
 @RequestMapping("/api/datastar")
@@ -20,32 +19,32 @@ public class DatastarController {
     @GetMapping(value = "/menu-stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public SseEmitter streamMenuUpdates() {
         SseEmitter emitter = new SseEmitter(Long.MAX_VALUE);
-        
+
         try {
             // Send initial signals
             sendSseEvent(emitter, "datastar-merge-signals", "{\"loading\": false, \"menuCount\": 0}");
-            
+
             // Simulate real-time updates
             CompletableFuture.runAsync(() -> {
                 try {
                     for (int i = 0; i < 5; i++) {
                         Thread.sleep(2000);
-                        
+
                         Map<String, Object> signals = new HashMap<>();
                         signals.put("menuCount", i + 1);
                         signals.put("lastUpdate", LocalDate.now().toString());
-                        
+
                         sendSseEvent(emitter, "datastar-merge-signals", signals.toString());
                     }
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
                 }
             });
-            
+
         } catch (Exception e) {
             emitter.completeWithError(e);
         }
-        
+
         return emitter;
     }
 
@@ -53,14 +52,14 @@ public class DatastarController {
      * Get current menu plan with datastar formatting
      */
     @GetMapping("/menu/current")
-    public void getCurrentMenuPlan(org.springframework.web.context.request.WebRequest request, 
+    public void getCurrentMenuPlan(org.springframework.web.context.request.WebRequest request,
                                  jakarta.servlet.http.HttpServletResponse response) throws IOException {
         response.setContentType("text/event-stream");
-        
+
         // Mock menu plan data
         String menuHtml = generateMenuPlanHtml();
-        
-        sendSseEvent(response, "datastar-merge-fragments", 
+
+        sendSseEvent(response, "datastar-merge-fragments",
             "{\"fragments\":[{\"selector\":\"#menu-display\",\"html\":\"" + escapeJson(menuHtml) + "\"}]}");
     }
 
@@ -68,26 +67,26 @@ public class DatastarController {
      * Generate new menu plan with datastar formatting
      */
     @PostMapping("/menu/plan")
-    public void generateMenuPlan(@RequestBody(required = false) Map<String, Object> request, 
+    public void generateMenuPlan(@RequestBody(required = false) Map<String, Object> request,
                                jakarta.servlet.http.HttpServletResponse response) throws IOException {
         response.setContentType("text/event-stream");
-        
+
         // Send loading state
         sendSseEvent(response, "datastar-merge-signals", "{\"loading\": true}");
-        
+
         // Simulate processing time
         try {
             Thread.sleep(1000);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         }
-        
+
         // Send completed menu plan
         String menuHtml = generateMenuPlanHtml();
-        
-        sendSseEvent(response, "datastar-merge-fragments", 
+
+        sendSseEvent(response, "datastar-merge-fragments",
             "{\"fragments\":[{\"selector\":\"#menu-display\",\"html\":\"" + escapeJson(menuHtml) + "\"}]}");
-        
+
         // Update loading state
         sendSseEvent(response, "datastar-merge-signals", "{\"loading\": false}");
     }
@@ -96,33 +95,33 @@ public class DatastarController {
      * Get calendar events with datastar formatting
      */
     @GetMapping("/calendar/events")
-    public void getCalendarEvents(@RequestParam(required = false) String calendarId, 
+    public void getCalendarEvents(@RequestParam(required = false) String calendarId,
                                 jakarta.servlet.http.HttpServletResponse response) throws IOException {
         response.setContentType("text/event-stream");
-        
+
         // Send loading state
         sendSseEvent(response, "datastar-merge-signals", "{\"loading\": true, \"error\": null}");
-        
+
         try {
             // Mock calendar events data
             String eventsHtml = generateCalendarEventsHtml(calendarId);
-            
-            sendSseEvent(response, "datastar-merge-fragments", 
+
+            sendSseEvent(response, "datastar-merge-fragments",
                 "{\"fragments\":[{\"selector\":\"#content\",\"html\":\"" + escapeJson(eventsHtml) + "\"}]}");
-            
+
             // Update signals with current month/year
             Map<String, Object> monthSignals = new HashMap<>();
             monthSignals.put("currentMonth", LocalDate.now().getMonth().toString());
             monthSignals.put("currentYear", LocalDate.now().getYear());
-            
+
             sendSseEvent(response, "datastar-merge-signals", monthSignals.toString());
-            
+
             // Clear loading state
             sendSseEvent(response, "datastar-merge-signals", "{\"loading\": false}");
-            
+
         } catch (Exception e) {
             // Send error state
-            sendSseEvent(response, "datastar-merge-signals", 
+            sendSseEvent(response, "datastar-merge-signals",
                 "{\"loading\": false, \"error\": \"Failed to load calendar events: " + e.getMessage() + "\"}");
         }
     }

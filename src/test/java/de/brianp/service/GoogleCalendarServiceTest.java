@@ -1,20 +1,18 @@
 package de.brianp.service;
 
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
+
 import com.google.api.services.calendar.Calendar;
 import com.google.api.services.calendar.model.CalendarList;
+import java.io.IOException;
+import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
-
-import java.io.IOException;
-import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class GoogleCalendarServiceTest {
@@ -44,7 +42,7 @@ class GoogleCalendarServiceTest {
         lenient().when(mockOAuth2Service.getCalendarService()).thenReturn(mockCalendar);
         lenient().when(mockCalendar.calendarList()).thenReturn(mockCalendarList);
         lenient().when(mockCalendarList.list()).thenReturn(mockListRequest);
-        
+
         googleCalendarService = new GoogleCalendarService(mockOAuth2Service);
     }
 

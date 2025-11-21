@@ -8,18 +8,16 @@ import com.google.api.services.calendar.model.Event;
 import com.google.api.services.calendar.model.EventDateTime;
 import com.google.api.services.calendar.model.Events;
 import de.brianp.domain.MenuItem;
-import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
-import org.springframework.stereotype.Service;
-
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
-import java.util.Collections;
 import java.util.List;
+import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
+import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
@@ -131,10 +129,10 @@ public class GoogleCalendarService {
     public void deleteEvent(String eventId, String calendarId, OAuth2AuthenticationToken authentication) {
         try {
             Calendar calendar = getCalendar(authentication);
-            
+
             // Use provided calendarId or fall back to default
             String targetCalendarId = (calendarId != null && !calendarId.isEmpty()) ? calendarId : this.calendarId;
-            
+
             calendar.events().delete(targetCalendarId, eventId).execute();
         } catch (IOException | GeneralSecurityException e) {
             throw new RuntimeException("Failed to delete calendar event", e);
