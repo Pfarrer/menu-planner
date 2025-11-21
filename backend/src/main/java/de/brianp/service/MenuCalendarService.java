@@ -33,7 +33,7 @@ public class MenuCalendarService {
             LocalDate startDate = getStartDateFromMenuPlan(menuPlan);
             LocalDate endDate = getEndDateFromMenuPlan(menuPlan);
 
-            List<Event> existingEvents = googleCalendarService.getEvents(startDate, endDate, authentication);
+            List<Event> existingEvents = googleCalendarService.getEvents(startDate, endDate, null, authentication);
 
             // Create new events for menu items
             List<Event> createdEvents = menuPlan.getMenuItems().stream().filter(item -> item.getRecipe() != null)
@@ -56,7 +56,7 @@ public class MenuCalendarService {
             return List.of();
         }
 
-        return googleCalendarService.getEvents(startDate, endDate, authentication);
+        return googleCalendarService.getEvents(startDate, endDate, null, authentication);
     }
 
     /**

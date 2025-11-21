@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Personal Menu Planner</title>
+    <script type="module" src="https://cdn.jsdelivr.net/npm/@sudodevnull/datastar@1.0.0/dist/datastar.min.js"></script>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -35,9 +36,9 @@
     </style>
 </head>
 <body>
-    <div class="container">
+    <div class="container" data-store="{ 'user': { 'name': 'Guest' }, 'menuCount': 0 }">
         <h1>Welcome to Personal Menu Planner</h1>
-        <p class="welcome">
+        <p class="welcome" data-text="'Hello ' + user.name + '! Plan your meals efficiently with our intelligent menu planning system powered by OptaPlanner.'">
             Plan your meals efficiently with our intelligent menu planning system powered by OptaPlanner.
         </p>
         <p>
@@ -47,6 +48,27 @@
         <p>
             Get started by exploring the available features and customize your meal planning experience.
         </p>
+        <div style="margin-top: 30px;">
+            <button 
+                data-on:click="@get('/api/menu/current')"
+                class="login-btn"
+                style="background: #4285f4; color: white; padding: 12px 24px; border: none; border-radius: 6px; cursor: pointer; font-size: 16px; margin: 5px;">
+                View Current Menu Plan
+            </button>
+            <button 
+                data-on:click="@get('/api/menu/plan')"
+                class="login-btn"
+                style="background: #34a853; color: white; padding: 12px 24px; border: none; border-radius: 6px; cursor: pointer; font-size: 16px; margin: 5px;">
+                Generate New Menu Plan
+            </button>
+            <button 
+                data-on:click="window.location.href='/calendar.html'"
+                class="login-btn"
+                style="background: #fbbc04; color: #333; padding: 12px 24px; border: none; border-radius: 6px; cursor: pointer; font-size: 16px; margin: 5px;">
+                View Calendar
+            </button>
+        </div>
+        <div id="menu-display" style="margin-top: 20px;"></div>
     </div>
 </body>
 </html>

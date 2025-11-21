@@ -12,14 +12,15 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <java.version>25</java.version>
-        <maven.compiler.source>25</maven.compiler.source>
-        <maven.compiler.target>25</maven.compiler.target>
+        <java.version>17</java.version>
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
         <spring-boot.version>3.5.7</spring-boot.version>
         <optaplanner.version>9.44.0.Final</optaplanner.version>
         <google-api-client.version>2.7.0</google-api-client.version>
         <google-oauth-client.version>1.36.0</google-oauth-client.version>
         <google-calendar-api.version>v3-rev20220715-2.0.0</google-calendar-api.version>
+        <datastar.version>1.0.0</datastar.version>
     </properties>
 
     <dependencyManagement>
@@ -92,6 +93,9 @@
             <artifactId>google-http-client-jackson2</artifactId>
             <version>1.45.0</version>
         </dependency>
+
+        <!-- Datastar frontend library will be loaded from CDN -->
+        <!-- Backend SSE support using Spring Boot's built-in SseEmitter -->
 
         <dependency>
             <groupId>org.springframework.boot</groupId>
