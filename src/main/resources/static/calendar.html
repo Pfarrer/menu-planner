@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>My Calendar</title>
+    <script type="module" src="https://cdn.jsdelivr.net/npm/@sudodevnull/datastar@1.0.0/dist/datastar.min.js"></script>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -96,19 +97,36 @@
     </style>
 </head>
 <body>
-    <div class="header">
+    <div class="header" data-store="{ 'selectedCalendarId': '', 'events': [], 'loading': true, 'error': null }">
         <h1>📅 My Calendar</h1>
-        <div id="month-year">Loading...</div>
+        <div id="month-year" data-text="loading ? 'Loading...' : (currentMonth + ' ' + currentYear)">Loading...</div>
         <div id="calendar-selector" style="margin-top: 15px;">
             <label for="calendar-select" style="margin-right: 10px;">Select Google Calendar to use</label>
-            <select id="calendar-select" style="padding: 8px; border-radius: 4px; border: 1px solid #ccc;">
+            <select 
+                id="calendar-select" 
+                data-bind="selectedCalendarId"
+                data-on:change="loadEventsForCalendar(selectedCalendarId)"
+                style="padding: 8px; border-radius: 4px; border: 1px solid #ccc;">
                 <option value="">Loading calendars...</option>
             </select>
         </div>
     </div>
 
-    <div id="content">
-        <div class="loading">Loading calendar events...</div>
+    <div id="content" data-store="{ 'calendars': [] }">
+        <div class="loading" data-show="loading">Loading calendar events...</div>
+        <div class="error" data-show="error" data-text="error"></div>
+        <div class="no-events" data-show="!loading && !error && events.length === 0">
+            <h3>No events found</h3>
+            <p data-text="'You don\'t have any calendar events for ' + currentMonth + ' ' + currentYear + '.'"></p>
+        </div>
+        <div data-show="!loading && !error && events.length > 0">
+            <div data-for="event in events" class="event-card">
+                <div class="event-title" data-text="event.summary || 'No title'"></div>
+                <div class="event-time" data-text="'📅 ' + event.formattedDate + (event.allDay ? ' (All day)' : '⏰ ' + event.formattedTime)"></div>
+                <div class="event-description" data-show="event.description" data-text="event.description"></div>
+                <div class="event-time" data-show="event.location" data-text="'📍 ' + event.location"></div>
+            </div>
+        </div>
     </div>
 
     <script>
